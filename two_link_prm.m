@@ -275,7 +275,7 @@ function [x_plan,xs] = plan_and_track(x1,x2,S)
 %   x2, second state (4x1 array) 
 %   S, arm parameters (Struct) 
 % Outputs:
-%   X, desired trajectory 
+%   x_plan, desired trajectory 
 %   xs, executed trajectory
 
 % This should take in two neighboring states (from the graph-generated path) 

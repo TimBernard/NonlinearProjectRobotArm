@@ -2,7 +2,6 @@ function f = three_link_manipulator()
 % Simulation of Three Link Manipulator 
 
 %---------- model parameters ----------%
-
 % link dimensions 
 S.length = 1;
 S.height = .125;
@@ -36,7 +35,6 @@ S.Iz3 = (S.m3/12)*(S.length^2 + S.width^2);
 S.g = 9.8;
 
 %---------------- Simulate Dynamics --------------------%
-
 % Initial State 
 x0 = [0 0 0 1 3 3]';
 
