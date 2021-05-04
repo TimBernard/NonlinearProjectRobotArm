@@ -1,4 +1,4 @@
-% Given q1 and q2, find the position of each link
+% Given q1 and q2, find the end
 function x = fwdKin(q)
     l1 = 0.5; l2 = 0.5;
     x(:,1) = [0;0];

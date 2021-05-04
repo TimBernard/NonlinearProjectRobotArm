@@ -9,7 +9,7 @@ function path = Dijkstra(G, n_init, n_goal)
     dist(n_init) = 0;
     
     % Continue iteration while n_goal is unvisited
-    while ismember(n_goal, U) && count < 5000
+    while ismember(n_goal, U) && count < 10000
         
         % Iterate through U to find the node with the least distance
         Cdist = inf;
@@ -36,7 +36,7 @@ function path = Dijkstra(G, n_init, n_goal)
         count = count + 1;
     end
     
-    if count >= 5000
+    if count >= 10000
         path = [];
         disp('A path was not found after 5000 iterations')
         return;

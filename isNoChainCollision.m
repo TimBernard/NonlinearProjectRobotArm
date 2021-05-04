@@ -1,3 +1,5 @@
+% Given the position of each of the links, determine whether or not the
+% Serial Manipulator intersects with any obstacle in O
 function b = isNoChainCollision(x, O)
     for i = 1:length(O)
         for j = 1:length(x)-1

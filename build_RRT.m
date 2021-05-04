@@ -10,7 +10,8 @@ function [path_indx, V, E, G, Q] = build_RRT(q_I, x_G, n, dx, O, xmax, ymax)
     end
     
     for i = 1:n
-        % Continuously generate q_rand until it is in C_free
+        % Continuously generate x_rand until it is does not collide with
+        % any obstacle
         flag = 1;
         while flag
             x_rand = [xmax*rand(); ymax*rand()];
@@ -20,14 +21,20 @@ function [path_indx, V, E, G, Q] = build_RRT(q_I, x_G, n, dx, O, xmax, ymax)
             end
         end
         
-        % Find the nearest point to q_rand that is already in V
+        % Find the nearest point to x_rand that is already in the tree
         [x_near, i_near] = Nearest_Vertex(x_rand, V);
         
-        % Move dq along the direction from q_near to q_rand
-        x_new = x_near + (x_rand - x_near) * (dx / norm(x_rand - x_near));
-        q_new = invKin(x_new);
+        % Move dx along the direction from q_near to q_rand or just use
+        % x_rand if it is smaller than dx
+        if norm(x_rand - x_near) > dx
+            x_new = x_near + (x_rand - x_near) * (dx / norm(x_rand - x_near));
+            q_new = invKin(x_new);
+        else
+            x_new = x_rand;
+            q_new = q_rand;
+        end
         
-        % Check if q_new will collide with O or if its out of bounds
+        % Check if x_new will collide with O or if its out of bounds
         if isnocollision([x_near, x_new], O) && max(x_new) < max(xmax,ymax) && min(x_new) > 0 && isNoChainCollision(fwdKin(q_new), O)
             % Add new values to graph
             V = [V, x_new(:,end)];
@@ -38,11 +45,11 @@ function [path_indx, V, E, G, Q] = build_RRT(q_I, x_G, n, dx, O, xmax, ymax)
         end
     end
     
-    % Find the points in V that are the closest to q_I and q_G
+    % Find the points in V that are the closest to x_I and x_G
     [~, x_1] = Nearest_Vertex(x_I(:,end), V);
     [~, x_end] = Nearest_Vertex(x_G, V);
     
-    % Find path using Dijkstra's algorithm
+    % Find shortest path using Dijkstra's algorithm
     path_indx = Dijkstra(G, x_1, x_end);
 end
 
@@ -63,11 +70,12 @@ end
 % Checks for collision with any member of set O
 % Returns true if there are no collisions
 function b = isnocollision(S, O)
-    flag = 1:length(O);
     for i = 1:length(O)
-        flag(i) = isintersect_linepolygon(S, O{i});
+        if isintersect_linepolygon(S, O{i});
+            b = 0;
+            return;
+        end
     end
     
-    % Check to see if S intersects with any O
-    b = all(~flag);
+    b = 1;
 end

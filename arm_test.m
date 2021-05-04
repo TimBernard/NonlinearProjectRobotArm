@@ -1,59 +1,73 @@
-function [xs, ts] = arm_test(x0, xd)
-% EN530.678 HW#3 supplementary 
+function [xs, ts] = arm_test(x0, xf, S)
 % simulation of a two-link manipulator 
-%
-% M. Kobilarov
-
-% model parameters
-S.m1 = 1;
-S.m2 = 1;
-S.l1 = .5;
-S.l2 = .5;
-S.lc1 = .25;
-S.lc2 = .25;
-S.I1 = S.m1*S.l1/12;
-S.I2 = S.m2*S.l2/12;
-S.g = 9.8;
-
-% initial state with high-velocity
-
 % desired state
-S.xd = xd;
 
-% desired acceleration -- only applicable for trajectory tracking
-S.ad = [0; 0];
+q0 = x0(1:2);
+qf = xf(1:2);
+dq0 = [x0(3),x0(4)]';  % desired starting velocity
+dqf = [xf(3),xf(4)]'; % desired end velocity
 
-T = 5; % simulation time
+T = 0.5; % simulation time
 
-S.kp = 2; S.kd = 1;
+% compute path coefficients
+A = poly3_coeff(q0, dq0, qf, dqf, T);
+S.A = A;
+
+% desired path
+qd = A*poly3([0:.01:T]);
 
 [ts, xs] = ode45(@arm_ode, [0 T], x0, [], S);
 
-% figure(12);
-% plot(xs(:,1), xs(:,2), '-b')
-% hold on
-% 
-% plot(S.xd(1),S.xd(2),'*g')
-% xlabel('x')
-% ylabel('y')
+figure(5);
+plot(xs(:,1), xs(:,2), '-b')
+hold on
 
+plot(qd(1,:),qd(2,:),'--r')
+xlabel('x')
+ylabel('y')
+end
 
+%% Trajectory Generation
+function A = poly3_coeff(y0, dy0, yf, dyf, T)
+% computes cubic curve connecting (y0,dy0) and (yf, dyf) at time T
+
+Y = [y0, dy0, yf, dyf];
+L = [poly3(0), dpoly3(0), poly3(T), dpoly3(T)];
+A = Y*inv(L);
+end
+
+function f = poly3(t)
+f = [t.^3; t.^2; t; ones(size(t))];
+end
+
+function f = dpoly3(t)
+f = [3*t.^2; 2*t; ones(size(t)); zeros(size(t))];
+end
+
+function f = d2poly3(t)
+f = [6*t; 2; zeros(size(t)); zeros(size(t))];
+end
+
+%% Control Law
 function u = arm_ctrl(t, x, S)
 % standard computed torque law
+
+% desired
+qd = S.A*poly3(t);
+dqd = S.A*dpoly3(t);
+d2qd = S.A*d2poly3(t);
 
 % current
 q = x(1:2);
 v = x(3:4);
 
-% desired
-qd = S.xd(1:2);
-vd = S.xd(3:4);
-
 [M, C, N] = arm_dyn(t, x, S);
 %u = M*(S.ad - S.kp*(q - qd) - S.kd*(v - vd)) + C*v + N;
 
 % alternatively without coriolis/centripetal
- u = M*(S.ad - S.kp*(q - qd) - S.kd*(v - vd)) + N;
+ud = M*(d2qd) + C*v + N;
+u = ud + M*(-S.kp*(q - qd) - S.kd*(v - dqd));
+end
 
 
 
@@ -68,6 +82,7 @@ u = arm_ctrl(t, x, S);
 
 dx = [v;
       inv(M)*(u - C*v - N)];
+end
 
 
 
@@ -104,5 +119,5 @@ M = [m11, m12;
 % gravity, damping, etc...
 N = [(S.m1*S.lc1 + S.m2*S.l1)*S.g*c1 + S.m2*S.lc2*S.g*c12;
       S.m2*S.lc2*S.g*c12];
-
+end
 
