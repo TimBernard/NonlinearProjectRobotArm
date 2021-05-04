@@ -16,7 +16,6 @@ S.I2 = S.m2*S.l2/12;
 S.g = 9.8;
 
 % initial state with high-velocity
-x0 = x0
 
 % desired state
 S.xd = xd;
@@ -30,13 +29,13 @@ S.kp = 2; S.kd = 1;
 
 [ts, xs] = ode45(@arm_ode, [0 T], x0, [], S);
 
-figure(12);
-plot(xs(:,1), xs(:,2), '-b')
-hold on
-
-plot(S.xd(1),S.xd(2),'*g')
-xlabel('x')
-ylabel('y')
+% figure(12);
+% plot(xs(:,1), xs(:,2), '-b')
+% hold on
+% 
+% plot(S.xd(1),S.xd(2),'*g')
+% xlabel('x')
+% ylabel('y')
 
 
 function u = arm_ctrl(t, x, S)

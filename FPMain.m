@@ -2,18 +2,24 @@ format compact
 close all
 
 %% Test build_PRM
-Q1 = [0, 0.35, 0.35, 0; 0.15, 0.15, 0.30, 0.30];
-Q2 = [0.65, 1, 1, 0.65; 0.15, 0.15, 0.30, 0.30];
+Q1 = [0, 0.40, 0.40, 0; 0.15, 0.15, 0.30, 0.30];
+Q2 = [0.60, 1, 1, 0.60; 0.15, 0.15, 0.30, 0.30];
 O = {Q1, Q2};
 
 q_I = [-0.49*pi; 0.98*pi]; x_G = [0.5;0.5];
-v_I = (10^-5) * [1;1]; v_G = [0;0];
+v_G = [0;0];
 xmax = 1; ymax = 1;
+workspace = [0, 0, xmax, xmax, 0; 0, ymax, ymax, 0, 0];
 
 figure(1)
+hold on
 x_I = fwdKin(q_I);
-plot(x_I(1,:), x_I(2,:))
-axis([-2 2 -2 2])
+plot(polyshape(Q1(1,:), Q1(2,:)))
+plot(polyshape(Q2(1,:), Q2(2,:)))
+plot(x_I(1,:), x_I(2,:), 'r-o')
+plot(workspace(1,:), workspace(2,:), 'k')
+axis([-0.5 1 -0.5 1])
+hold off
 
 %% Generate Path Tree
 [path_indx, V, E, G, Q] = build_RRT(q_I, x_G, 5000, 0.01, O, xmax, ymax);
@@ -60,6 +66,7 @@ figure(4)
 hold on
 plot(polyshape(Q1(1,:), Q1(2,:)))
 plot(polyshape(Q2(1,:), Q2(2,:)))
+plot(workspace(1,:), workspace(2,:), 'k')
 axis([-0.5 1 -0.5 1])
 for i = 1:length(full_pathSM)
     if i ~=1
