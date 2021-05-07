@@ -71,7 +71,7 @@ end
 % Returns true if there are no collisions
 function b = isnocollision(S, O)
     for i = 1:length(O)
-        if isintersect_linepolygon(S, O{i});
+        if isintersect_linepolygon(S, O{i})
             b = 0;
             return;
         end

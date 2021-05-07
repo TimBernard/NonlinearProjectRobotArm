@@ -23,7 +23,7 @@ S.I1 = S.m1*S.l1/12;
 S.I2 = S.m2*S.l2/12;
 S.g = 9.8;
 
-S.kp = 20; S.kd = 10;
+S.kp = 2; S.kd = 1;
 
 %% Plot Initial State
 figure(1)
@@ -62,8 +62,11 @@ Vel(:,end) = v_G; Vel = 0.0001*Vel;
 % Use the control law to generate a smoother path between path points
 full_pathQ = [];
 for i = 1:length(path_indx)-1
-    full_pathQ = [full_pathQ, arm_test([Q(:,path_indx(i)); Vel(:,i)], [Q(:,path_indx(i+1)); Vel(:,i+1)], S)'];
+    full_pathQ = [full_pathQ, arm_test([Q(:,path_indx(i)); 0; 0], [Q(:,path_indx(i+1)); 0; 0], S)'];
 end
+
+%full_pathQ = arm_test([Q(:,path_indx(1)); Vel(:,1)], [Q(:,path_indx(2)); Vel(:,2)], S)';
+
 
 % Convert q in C-space to position in workspace
 full_pathSM = [];
@@ -82,24 +85,8 @@ plot(full_pathEE(1,:), full_pathEE(2,:))
 hold off
 axis([0 1 0 1])
 
-%% Animate Arm
-figure(4)
-hold on
-plot(polyshape(Q1(1,:), Q1(2,:)))
-plot(polyshape(Q2(1,:), Q2(2,:)))
-plot(workspace(1,:), workspace(2,:), 'k')
-axis([-0.5 1 -0.5 1])
-for i = 1:length(full_pathSM)
-    if i ~=1
-        delete(h)
-    end
-    h = plot(full_pathSM(1,:,i),full_pathSM(2,:,i), 'r-o');
-    drawnow
-end
-hold off
-
 %% Closest Distance to Obstacle
-figure(5)
+
 
 obsDist = zeros(length(O)+1, length(full_pathEE)); obsDist(end,:) = 1:length(full_pathEE);
 for i = 1:length(full_pathEE)
@@ -108,7 +95,23 @@ for i = 1:length(full_pathEE)
     end
 end
 
-hold on
+figure(4); hold on
 plot(obsDist(end,:), obsDist(1,:))
 plot(obsDist(end,:), obsDist(2,:))
 legend('Distance to Obs1', 'Distance to Obs2')
+
+%% Animate Arm
+% figure(5)
+% hold on
+% plot(polyshape(Q1(1,:), Q1(2,:)))
+% plot(polyshape(Q2(1,:), Q2(2,:)))
+% plot(workspace(1,:), workspace(2,:), 'k')
+% axis([-0.5 1 -0.5 1])
+% for i = 1:length(full_pathSM)
+%     if i ~=1
+%         delete(h)
+%     end
+%     h = plot(full_pathSM(1,:,i),full_pathSM(2,:,i), 'r-o');
+%     drawnow
+% end
+% hold off

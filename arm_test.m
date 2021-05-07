@@ -1,13 +1,13 @@
 function [xs, ts] = arm_test(x0, xf, S)
 % simulation of a two-link manipulator 
 % desired state
-
+S.xd = xf;
 q0 = x0(1:2);
 qf = xf(1:2);
-dq0 = [x0(3),x0(4)]';  % desired starting velocity
-dqf = [xf(3),xf(4)]'; % desired end velocity
+dq0 = [x0(3);x0(4)];  % desired starting velocity
+dqf = [xf(3);xf(4)]; % desired end velocity
 
-T = 0.5; % simulation time
+T = 5; % simulation time
 
 % compute path coefficients
 A = poly3_coeff(q0, dq0, qf, dqf, T);
@@ -18,13 +18,14 @@ qd = A*poly3([0:.01:T]);
 
 [ts, xs] = ode45(@arm_ode, [0 T], x0, [], S);
 
-% figure(5);
-% plot(xs(:,1), xs(:,2), '-b')
-% hold on
-% 
-% plot(qd(1,:),qd(2,:),'--r')
-% xlabel('x')
-% ylabel('y')
+figure(5);
+hold on
+plot(xs(:,1), xs(:,2), '-b')
+
+plot(qd(1,:),qd(2,:),'--r')
+xlabel('q1')
+ylabel('q2')
+legend('Trajectory','Desired')
 end
 
 %% Trajectory Generation
@@ -50,8 +51,6 @@ end
 
 %% Control Law
 function u = arm_ctrl(t, x, S)
-% standard computed torque law
-
 % desired
 qd = S.A*poly3(t);
 dqd = S.A*dpoly3(t);
@@ -59,32 +58,32 @@ d2qd = S.A*d2poly3(t);
 
 % current
 q = x(1:2);
-v = x(3:4);
+dq = x(3:4);
 
 [M, C, N] = arm_dyn(t, x, S);
-%u = M*(S.ad - S.kp*(q - qd) - S.kd*(v - vd)) + C*v + N;
+b = C*dq + N;
 
-% alternatively without coriolis/centripetal
-ud = M*(d2qd) + C*v + N;
-u = ud + M*(-S.kp*(q - qd) - S.kd*(v - dqd));
+% virtual input
+v = d2qd - S.kp*(q - qd) - S.kd*(dq - dqd);
+
+% inputs
+u = M*v + b;
 end
-
-
 
 function dx = arm_ode(t, x, S)
 % the ODE for the arm
 
-v = x(3:4);
+dq = x(3:4);
 
 [M, C, N] = arm_dyn(t, x, S);
+b = C*dq + N;
 
 u = arm_ctrl(t, x, S);
 
-dx = [v;
-      inv(M)*(u - C*v - N)];
+dx = [dq;
+      inv(M)*(u-b)]
+      
 end
-
-
 
 function [M, C, N] = arm_dyn(t, x, S)
 % compute the dynamical terms of the manipulator
