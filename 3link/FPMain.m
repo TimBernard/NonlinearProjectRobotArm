@@ -7,7 +7,7 @@ Q2 = [0.60, 1, 1, 0.60; 0.15, 0.15, 0.30, 0.30];
 O = {Q1, Q2};
 
 %% Initial Inital state, goal state, and workspace
-q_I = [-2*pi/3; 2*pi/3; 2*pi/3]; x_G = [0.5;0.5];
+q_I = [-2*pi/3; 2*pi/3; 2*pi/3]; x_G = [1;1 ];
 v_G = [0;0;0];
 xmax = 1; ymax = 1;
 workspace = [0, 0, xmax, xmax, 0; 0, ymax, ymax, 0, 0];
@@ -41,7 +41,7 @@ axis([-0.5 1 -0.5 1])
 hold off
 
 %% Generate Path Tree
-[path_indx, V, E, G, Q] = build_RRT(q_I, x_G, 5000, 0.01, O, xmax, ymax);
+[path_indx, V, E, G, Q] = build_RRT(q_I, x_G, 10000, 0.01, O, xmax, ymax);
 G(isinf(G)) = 0;
 path = V(:,path_indx);
 
@@ -68,9 +68,6 @@ full_pathQ = [];
 for i = 1:length(path_indx)-1
     full_pathQ = [full_pathQ, arm_test([Q(:,path_indx(i)); Vel(:,i)], [Q(:,path_indx(i+1)); Vel(:,i+1)], S)'];
 end
-
-%full_pathQ = arm_test([Q(:,path_indx(1)); Vel(:,1)], [Q(:,path_indx(2)); Vel(:,2)], S)';
-
 
 % Convert q in C-space to position in workspace
 full_pathSM = [];
@@ -105,17 +102,17 @@ plot(obsDist(end,:), obsDist(2,:))
 legend('Distance to Obs1', 'Distance to Obs2')
 
 %% Animate Arm
-% figure(5)
-% hold on
-% plot(polyshape(Q1(1,:), Q1(2,:)))
-% plot(polyshape(Q2(1,:), Q2(2,:)))
-% plot(workspace(1,:), workspace(2,:), 'k')
-% axis([-0.5 1 -0.5 1])
-% for i = 1:length(full_pathSM)
-%     if i ~=1
-%         delete(h)
-%     end
-%     h = plot(full_pathSM(1,:,i),full_pathSM(2,:,i), 'r-o');
-%     drawnow
-% end
-% hold off
+figure(5)
+hold on
+plot(polyshape(Q1(1,:), Q1(2,:)))
+plot(polyshape(Q2(1,:), Q2(2,:)))
+plot(workspace(1,:), workspace(2,:), 'k')
+axis([-0.5 1 -0.5 1])
+for i = 1:length(full_pathSM)
+    if i ~=1
+        delete(h)
+    end
+    h = plot(full_pathSM(1,:,i),full_pathSM(2,:,i), 'r-o');
+    drawnow
+end
+hold off

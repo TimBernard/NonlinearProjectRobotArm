@@ -34,19 +34,21 @@ function [path_indx, V, E, G, Q] = build_RRT(q_I, x_G, n, dx, O, xmax, ymax)
             q_new = Q(:,i_near) + Jacobian(Q(:,i_near), delX);
             x_new = fwdKin(q_new);
         end
-        
-        if norm(x_new(:,end) - x_near) > 2*dx
-            disp("Error")
-            Jacobian(Q(:,i_near), delX)
-        end
+%         
+%         if norm(x_new(:,end) - x_near) > 2*dx
+%             disp("Error")
+%             Jacobian(Q(:,i_near), delX)
+%         end
         % Check if x_new will collide with O or if its out of bounds
-        if (isnocollision([x_near, x_new(:,end)], O)) && (max(x_new(:,end)) < max(xmax,ymax)) && (min(x_new(:,end)) > 0) && (isNoChainCollision(x_new, O))
+        if (isnocollision([x_near, x_new(:,end)], O)) && (max(x_new(:,end)) < max(xmax,ymax)) && (min(x_new(:,end)) > 0) && (isNoChainCollision(x_new, O)) && norm(x_new(:,end) - x_near) < 2*dx
             % Add new values to graph
             V = [V, x_new(:,end)];
             Q = [Q, q_new];
             E = [E, [i_near; length(V)]];
             G(i_near, length(V)) = norm(x_new(:,end) - x_near);
             G(length(V), i_near) = norm(x_new(:,end) - x_near);
+        else
+            flag = 1;
         end
     end
     
