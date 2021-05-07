@@ -57,7 +57,7 @@ xlim([0, xmax]); ylim([0, ymax]);
 
 %% Control Law
 % Calculate the velocity between path points
-Vel = zeros(2,length(path));
+Vel = zeros(3,length(path));
 for i = 1:length(path)-1
     Vel(:,i) = (Q(:,path_indx(i)) - Q(:,path_indx(i+1))) / norm(Q(:,path_indx(i)) - Q(:,path_indx(i+1)));
 end
@@ -66,7 +66,7 @@ Vel(:,end) = v_G; Vel = 0.0001*Vel;
 % Use the control law to generate a smoother path between path points
 full_pathQ = [];
 for i = 1:length(path_indx)-1
-    full_pathQ = [full_pathQ, arm_test([Q(:,path_indx(i)); 0; 0], [Q(:,path_indx(i+1)); 0; 0], S)'];
+    full_pathQ = [full_pathQ, arm_test([Q(:,path_indx(i)); Vel(:,i)], [Q(:,path_indx(i+1)); Vel(:,i+1)], S)'];
 end
 
 %full_pathQ = arm_test([Q(:,path_indx(1)); Vel(:,1)], [Q(:,path_indx(2)); Vel(:,2)], S)';
@@ -76,7 +76,7 @@ end
 full_pathSM = [];
 full_pathEE = [];
 for i = 1:length(full_pathQ)
-    full_pathSM = cat(3, full_pathSM, fwdKin(full_pathQ(1:2,i)));
+    full_pathSM = cat(3, full_pathSM, fwdKin(full_pathQ(1:3,i)));
     full_pathEE = [full_pathEE, full_pathSM(:,end,end)];
 end
 
