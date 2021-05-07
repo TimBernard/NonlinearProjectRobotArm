@@ -77,6 +77,23 @@ ylabel('q_2');
 title('q_2 path');
 hold off
     
+figure(3)
+hold on 
+
+% Desired q1
+plot(linspace(0,10,size(X_(1,:),2)),X_(1,:),'-r');
+
+% Exectued q2 
+plot(ts,xs(:,1),'-b');
+
+% plot goal q2 joint value 
+plot(10,xf(1),'*g');
+
+xlabel('time');
+ylabel('q_1'); 
+title('q_1 path');
+hold off
+
 function A = poly3_coeff(y0, dy0, yf, dyf, T)
 % computes cubic curve connecting (y0,dy0) and (yf, dyf) at time T
 
