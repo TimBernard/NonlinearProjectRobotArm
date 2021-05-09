@@ -1,4 +1,4 @@
-function pose = three_link_forwardkin(q,S)
+function pose = elbow_forwardkin(q,S)
 % Forward Kinematics for three-link (elbow) manipulator
 %   from MLS Example 3.2 (pg. 89)
 %
@@ -33,5 +33,5 @@ function [xi_hat] = wedge(xi)
 
 w_hat = skew3(xi(4:6));
 v = xi(1:3);
-xi_hat = [w_hat, v; zeros(1,3) 1];
+xi_hat = [w_hat, v; zeros(1,4)];
 end
