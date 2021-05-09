@@ -64,17 +64,22 @@ end
 Vel(:,end) = v_G; Vel = 0.0001*Vel;
 
 % Use the control law to generate a smoother path between path points
-full_pathQ = [];
-for i = 1:length(path_indx)-1
-    full_pathQ = [full_pathQ, arm_test([Q(:,path_indx(i)); Vel(:,i)], [Q(:,path_indx(i+1)); Vel(:,i+1)], S)'];
+full_pathQ = [Q(:,path_indx(1));Vel(:,1)];
+for i = 2:length(path_indx)
+    temp = arm_testLR(full_pathQ(:,end), [Q(:,path_indx(i)); Vel(:,i)], S)';
+    full_pathQ = [full_pathQ, temp(:,end)];
 end
 
 % Convert q in C-space to position in workspace
-full_pathSM = [];
-full_pathEE = [];
+full_pathSM = zeros(2, 4, length(path_indx));
+full_pathEE = zeros(2, length(path_indx));
+error = zeros(1, length(path_indx));
 for i = 1:length(full_pathQ)
-    full_pathSM = cat(3, full_pathSM, fwdKin(full_pathQ(1:3,i)));
-    full_pathEE = [full_pathEE, full_pathSM(:,end,end)];
+    full_pathSM(:,:,i) = fwdKin(full_pathQ(1:3,i));
+    full_pathEE(:,i) = full_pathSM(:,end,i);
+    temp = fwdKin(Q(:,path_indx(i)));
+    
+    error(i) = norm(temp(:,end) - full_pathEE(:,i));
 end
 
 % Plot the smooth end-effector position
@@ -86,6 +91,10 @@ plot(full_pathEE(1,:), full_pathEE(2,:))
 hold off
 axis([0 1 0 1])
 
+%% Stabilization Error
+figure(4)
+plot([1:length(error)], error);
+
 %% Closest Distance to Obstacle
 
 obsDist = zeros(length(O)+1, length(full_pathEE)); obsDist(end,:) = 1:length(full_pathEE);
@@ -95,13 +104,13 @@ for i = 1:length(full_pathEE)
     end
 end
 
-figure(4); hold on
+figure(5); hold on
 plot(obsDist(end,:), obsDist(1,:))
 plot(obsDist(end,:), obsDist(2,:))
 legend('Distance to Obs1', 'Distance to Obs2')
 
 %% Animate Arm
-figure(5)
+figure(6)
 hold on
 plot(polyshape(Q1(1,:), Q1(2,:)))
 plot(polyshape(Q2(1,:), Q2(2,:)))

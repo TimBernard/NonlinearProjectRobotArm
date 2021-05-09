@@ -7,19 +7,18 @@ qf = xf(1:3);
 dq0 = x0(4:6); % desired starting velocity
 dqf = xf(4:6); % desired end velocity
 
-T = 5; % simulation time
+T = 0.1; % simulation time
 
 % compute path coefficients
 A = poly3_coeff(q0, dq0, qf, dqf, T);
 S.A = A;
 
 % desired path
-%poly3([0:.01:T])
 qd = A*poly3([0:.01:T]);
 
 [ts, xs] = ode45(@arm_ode, [0 T], x0, [], S);
 
-% figure(5);
+% figure(7);
 % hold on
 % plot3(xs(:,1), xs(:,2), xs(:,3), '-b')
 % 
@@ -28,6 +27,7 @@ qd = A*poly3([0:.01:T]);
 % ylabel('q2')
 % zlabel('q3')
 % legend('Trajectory','Desired')
+% axis equal
 end
 
 %% Trajectory Generation
@@ -74,7 +74,6 @@ end
 
 function dx = arm_ode(t, x, S)
 % the ODE for the arm
-
 dq = x(4:6);
 
 [M, C, N] = arm_dyn(t, x, S);
@@ -83,7 +82,7 @@ b = C + N;
 u = arm_ctrl(t, x, S);
 
 dx = [dq;
-      inv(M)*(u-b)];
+      inv(M)*(u - b)];
       
 end
 
@@ -105,9 +104,7 @@ s3 = sin(q(3));
 c12 = cos(q(1) + q(2));
 c23 = cos(q(2) + q(3));
 c123 = cos(q(1) + q(2) + q(3));
-s12 = sin(q(1) + q(2));
 s23 = sin(q(2) + q(3));
-s123 = sin(q(1) + q(2) + q(3));
 
 % coriolis elements
 b1 = -S.m2*S.l1*S.lc2*(2*v(1) + v(2))*s2*v(2) - ...
