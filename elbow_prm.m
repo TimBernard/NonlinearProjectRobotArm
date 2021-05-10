@@ -8,7 +8,7 @@ S.obj1_origin = [0,-1,1];
 S.obj1_edge = [0.5,0.5,0.5];
 
 % S.obj2_origin = [0.5,0.5,0.5];
-S.obj2_origin = [-0.5,-0.5,1.5];
+S.obj2_origin = [-1.5,-1.5,1.5];
 S.obj2_edge = [0.5,0.5,0.5];
 
 % link dimensions 
@@ -260,7 +260,7 @@ function idx = search_departability(V,q_qoal,S)
 % Output: 
 %   idx, index of best vertex 
 
-k = 20; % Number of nearest neighbors for each vertex 
+k = 4; % Number of nearest neighbors for each vertex 
 step = 0.1; % Step size between 
 nn_idx = get_nn(q_qoal,V,k);
 for j=1:k
@@ -478,7 +478,7 @@ function [x_plan,xs] = plan_and_track(x1,x2,S)
 % This should take in two neighboring states (from the graph-generated path) 
 % and then return the desired trajectory and the actual tracked trajectory 
 
-T = 0.25; % simulation time
+T = 0.2; % simulation time
 
 % boundary conditions in flat output space 
 y1 = elbow_h(x1);
