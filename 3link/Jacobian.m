@@ -10,5 +10,4 @@ function dq = Jacobian(q, dx)
            l1*cos(t(1)) + l2*cos(t(2)) + l3*cos(t(3)),    l2*cos(t(2)) + l3*cos(t(3)),   l3*cos(t(3))];
        
     dq = J'*inv(J*J')*dx;
-    %dq = dq/(norm(dq)*50);
 end

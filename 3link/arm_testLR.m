@@ -1,4 +1,4 @@
-function [xs, ts] = arm_testLR(x0, xf, S)
+function [xs, ts, error] = arm_testLR(x0, xf, S)
 % simulation of a two-link manipulator 
 % desired state
 S.xd = xf;
@@ -13,21 +13,25 @@ T = 0.1; % simulation time
 A = poly3_coeff(q0, dq0, qf, dqf, T);
 S.A = A;
 
-% desired path
-qd = A*poly3([0:.01:T]);
-
 [ts, xs] = ode45(@arm_ode, [0 T], x0, [], S);
 
-% figure(7);
-% hold on
-% plot3(xs(:,1), xs(:,2), xs(:,3), '-b')
-% 
-% plot3(qd(1,:),qd(2,:),qd(3,:),'--r')
-% xlabel('q1')
-% ylabel('q2')
-% zlabel('q3')
-% legend('Trajectory','Desired')
-% axis equal
+% desired path
+qd = A*poly3(ts');
+error = [];
+for i = 1:length(xs)
+    error = [error, norm(qd(:,i) - xs(i,1:3)')];
+end
+
+figure(7);
+hold on
+plot3(xs(:,1), xs(:,2), xs(:,3), '-b')
+
+plot3(qd(1,:),qd(2,:),qd(3,:),'--r')
+xlabel('q1')
+ylabel('q2')
+zlabel('q3')
+legend('Trajectory','Desired')
+%axis equal
 end
 
 %% Trajectory Generation
@@ -74,20 +78,24 @@ end
 
 function dx = arm_ode(t, x, S)
 % the ODE for the arm
-k0 = 0.75;
-eta = 0.1;
 dq = x(4:6);
+
+k0 = 0.30;
+nu = k0 * abs(dq(3));
 
 [M, C, N] = arm_dyn(t, x, S);
 b = C + N;
 
 u = arm_ctrl(t, x, S);
+
 if norm(dq) > 1
-    v = -eta*(dq)/norm(dq);
+    v = -nu*(dq/norm(dq));
 else
-    v = -(eta^2)*(dq)/1;
+    v = -(nu^2)*(dq)/1;
 end
-delta = [0;0;(2*rand()-1)*k0*eta];
+
+delta = [0;0;(2*rand()-1)*k0*abs(dq(3))];
+%delta = (2*rand()-1)*k0*q;
 
 dx = [dq;
       inv(M)*(u + v + delta - b)];
